@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>حاسبة iPhone 17 Pro Max المتكاملة</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cairo for Arabic & Inter for clean numbers -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for crisp iOS-like icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --ios-bg: #000000;
+            --ios-card: #1C1C1E;
+            --ios-card-elevated: #2C2C2E;
+            --ios-btn-num: #333333;
+            --ios-btn-num-active: #737373;
+            --ios-btn-func: #A5A5A5;
+            --ios-btn-func-active: #D4D4D2;
+            --ios-orange: #FF9F0A;
+            --ios-orange-active: #FBC78D;
+            --ios-text-secondary: #8E8E93;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Cairo', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #0a0a0c;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .num-font {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* iPhone 17 Pro Max Frame on Desktop */
+        @media (min-width: 640px) {
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                padding: 1.25rem;
+                background: radial-gradient(circle at 50% 20%, #1e1e26 0%, #070709 100%);
+            }
+            .iphone-frame {
+                width: 414px;
+                height: 876px;
+                max-height: 94vh;
+                border-radius: 54px;
+                border: 4px solid #3a3a3f;
+                box-shadow: 0 0 0 2px #18181b, 0 30px 70px rgba(0, 0, 0, 0.85), inset 0 0 12px rgba(255,255,255,0.08);
+                position: relative;
+                overflow: hidden;
+                background-color: #000000;
+            }
+        }
+
+        @media (max-width: 639px) {
+            .iphone-frame {
+                width: 100vw;
+                height: 100dvh;
+                background-color: #000000;
+                display: flex;
+                flex-direction: column;
+            }
+        }
+
+        /* Custom Scrollbar for inner content */
+        .ios-scroll::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .ios-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .ios-scroll::-webkit-scrollbar-thumb {
+            background: #3A3A3C;
+            border-radius: 999px;
+        }
+
+        /* iOS Circular Button Physics */
+        .calc-btn {
+            transition: transform 0.08s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+        }
+
+        .calc-btn:active, .calc-btn.pressed {
+            transform: scale(0.92);
+        }
+
+        .btn-num {
+            background-color: var(--ios-btn-num);
+            color: #ffffff;
+        }
+        .btn-num:active, .btn-num.pressed {
+            background-color: var(--ios-btn-num-active);
+        }
+
+        .btn-func {
+            background-color: var(--ios-btn-func);
+            color: #000000;
+            font-weight: 500;
+        }
+        .btn-func:active, .btn-func.pressed {
+            background-color: var(--ios-btn-func-active);
+        }
+
+        .btn-op {
+            background-color: var(--ios-orange);
+            color: #ffffff;
+            font-weight: 500;
+        }
+        .btn-op:active, .btn-op.pressed {
+            background-color: var(--ios-orange-active);
+        }
+        .btn-op.active-op {
+            background-color: #ffffff;
+            color: var(--ios-orange);
+        }
+
+        .btn-sci {
+            background-color: #1C1C1E;
+            color: #E5E5EA;
+            font-size: 0.85rem;
+            border-radius: 16px;
+        }
+        .btn-sci:active {
+            background-color: #3A3A3C;
+        }
+
+        /* Inputs allow text selection */
+        input {
+            user-select: text;
+            -webkit-user-select: text;
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Tab Transition */
+        .tab-panel {
+            display: none;
+            animation: fadeIn 0.2s ease-out;
+        }
+        .tab-panel.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="iphone-frame flex flex-col justify-between mx-auto relative">
+
+    <!-- Top Status Bar & Dynamic Island (Visual on Desktop, Compact on Mobile) -->
+    <div class="pt-2 pb-1 px-6 flex items-center justify-between text-xs text-white/90 shrink-0 z-20 select-none" dir="ltr">
+        <span id="ios-clock" class="font-semibold num-font tracking-tight">10:28</span>
+        <!-- Dynamic Island -->
+        <div class="hidden sm:flex items-center justify-between w-28 h-7 bg-black rounded-full border border-neutral-800/80 px-2.5 shadow-inner">
+            <div class="w-2.5 h-2.5 rounded-full bg-[#121629] border border-neutral-800"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500/80 animate-pulse"></div>
+        </div>
+        <div class="flex items-center gap-1.5 text-[11px]">
+            <i class="fa-solid fa-signal"></i>
+            <i class="fa-solid fa-wifi"></i>
+            <i class="fa-solid fa-battery-full text-sm"></i>
+        </div>
+    </div>
+
+    <!-- Custom Toast Notification -->
+    <div id="toast" class="pointer-events-none fixed sm:absolute top-12 left-1/2 -translate-x-1/2 z-50 bg-neutral-800/95 backdrop-blur-md text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-2xl border border-white/10 opacity-0 transition-all duration-300 flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-circle-check text-[#FF9F0A]"></i>
+        <span id="toast-msg">تم النسخ بنجاح</span>
+    </div>
+
+    <!-- ==================== TAB 1: STANDARD IPHONE 17 PRO MAX CALCULATOR ==================== -->
+    <section id="tab-standard" class="tab-panel active flex-1 flex-col justify-between px-4 pb-2 overflow-hidden relative">
+        
+        <!-- Top Action Bar (History, Scientific Mode, Sound Toggle) -->
+        <div class="flex items-center justify-between pt-1 pb-2 shrink-0">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleHistory()" title="سجل العمليات" class="w-9 h-9 rounded-full bg-[#1C1C1E] hover:bg-[#2C2C2E] text-[#FF9F0A] flex items-center justify-center transition active:scale-90">
+                    <i class="fa-solid fa-list-ul text-sm"></i>
+                </button>
+                <button onclick="toggleScientific()" id="sci-toggle-btn" title="الآلة العلمية" class="px-3 h-9 rounded-full bg-[#1C1C1E] hover:bg-[#2C2C2E] text-neutral-300 text-xs font-semibold flex items-center gap-1.5 transition active:scale-95">
+                    <i class="fa-solid fa-square-root-variable text-[#FF9F0A]"></i>
+                    <span>علمية</span>
+                </button>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="copyCalcResult()" title="نسخ النتيجة" class="w-9 h-9 rounded-full bg-[#1C1C1E] hover:bg-[#2C2C2E] text-neutral-300 flex items-center justify-center transition active:scale-90">
+                    <i class="fa-regular fa-copy text-xs"></i>
+                </button>
+                <button onclick="toggleSound()" id="sound-toggle-btn" title="صوت الأزرار" class="w-9 h-9 rounded-full bg-[#1C1C1E] hover:bg-[#2C2C2E] text-[#FF9F0A] flex items-center justify-center transition active:scale-90">
+                    <i class="fa-solid fa-volume-high text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- History Drawer Overlay -->
+        <div id="history-drawer" class="hidden absolute inset-x-3 top-12 bottom-2 bg-[#1C1C1E]/95 backdrop-blur-xl rounded-3xl z-30 border border-white/10 flex flex-col p-4 shadow-2xl">
+            <div class="flex items-center justify-between pb-3 border-b border-white/10">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-[#FF9F0A]"></i>
+                    سجل العمليات الحسابية
+                </h3>
+                <div class="flex items-center gap-2">
+                    <button onclick="clearHistory()" class="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded-lg bg-red-500/10">مسح الكل</button>
+                    <button onclick="toggleHistory()" class="w-7 h-7 rounded-full bg-neutral-800 text-neutral-300 flex items-center justify-center">
+                        <i class="fa-solid fa-xmark text-xs"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="history-list" class="flex-1 overflow-y-auto ios-scroll py-2 space-y-2">
+                <p class="text-center text-neutral-500 text-xs py-10">لا توجد عمليات مسجلة بعد</p>
+            </div>
+        </div>
+
+        <!-- Display Area (iOS 18/19 Dual-Line Expression & Main Result) -->
+        <div class="flex-1 flex flex-col justify-end items-end px-2 pb-3 min-h-[115px] overflow-hidden" dir="ltr">
+            <!-- Ongoing Formula / Expression Line -->
+            <div id="calc-expression" class="text-[#8E8E93] text-lg sm:text-xl font-normal num-font tracking-wide min-h-[28px] max-w-full overflow-x-auto whitespace-nowrap ios-scroll text-right"></div>
+            <!-- Main Large Display -->
+            <div id="calc-display" class="text-white text-6xl sm:text-[64px] font-light num-font leading-none tracking-tight max-w-full overflow-x-auto whitespace-nowrap ios-scroll transition-all duration-100 mt-1">0</div>
+        </div>
+
+        <!-- Scientific Keypad Panel (Collapsible) -->
+        <div id="scientific-panel" class="hidden grid grid-cols-5 gap-1.5 mb-2 shrink-0" dir="ltr">
+            <button onclick="sciFunc('sin')" class="calc-btn btn-sci py-2">sin</button>
+            <button onclick="sciFunc('cos')" class="calc-btn btn-sci py-2">cos</button>
+            <button onclick="sciFunc('tan')" class="calc-btn btn-sci py-2">tan</button>
+            <button onclick="sciFunc('ln')" class="calc-btn btn-sci py-2">ln</button>
+            <button onclick="sciFunc('log')" class="calc-btn btn-sci py-2">log</button>
+            
+            <button onclick="sciFunc('sqrt')" class="calc-btn btn-sci py-2">√x</button>
+            <button onclick="sciFunc('sq')" class="calc-btn btn-sci py-2">x²</button>
+            <button onclick="sciFunc('inv')" class="calc-btn btn-sci py-2">1/x</button>
+            <button onclick="insertConstant('pi')" class="calc-btn btn-sci py-2">π</button>
+            <button onclick="insertConstant('e')" class="calc-btn btn-sci py-2">e</button>
+        </div>
+
+        <!-- Main iOS 17 Pro Max Keypad Grid (4x5 with Backspace on Top-Left) -->
+        <div class="grid grid-cols-4 gap-2.5 sm:gap-3 shrink-0 pb-1" dir="ltr">
+            <!-- Row 1: Backspace/AC, +/-, %, ÷ -->
+            <button id="btn-clear-back" onclick="handleBackspaceOrClear()" class="calc-btn btn-func aspect-square text-2xl sm:text-[26px]">
+                <span id="clear-icon">AC</span>
+            </button>
+            <button onclick="toggleSign()" class="calc-btn btn-func aspect-square text-2xl sm:text-[26px]">+/-</button>
+            <button onclick="handlePercent()" class="calc-btn btn-func aspect-square text-2xl sm:text-[26px]">%</button>
+            <button data-op="÷" onclick="chooseOperation('÷')" class="calc-btn btn-op aspect-square text-3xl sm:text-[34px]">÷</button>
+
+            <!-- Row 2: 7, 8, 9, × -->
+            <button onclick="appendNumber('7')" class="calc-btn btn-num aspect-square text-3xl sm:text-[32px]">7</button>
+            <button onclick="appendNumber('8')" class="calc-btn btn-num aspect-square text-3xl sm:text-[32px]">8</button>
+            <button onclick="appendNumber('9')" class="calc-btn btn-num aspect-square text-3xl sm:text-[32px]">9</button>
+            <button data-op="×" onclick="chooseOperation('×')" class="calc-btn btn-op aspect-square text-3xl sm:text-[34px]">×</button>
+
+            <!-- Row 3: 4, 5, 6, − -->
+            <button onclick="appendNumber('4')" class="calc-btn btn-num aspect-square text-3xl sm:text-[32px]">4</button>
+            <button onclick="appendNumber('5')" class="calc-btn btn-num aspect-square text-3xl sm:text-[32px]">5</button>
+            <button onclick="appendNumber('6')" class="calc-btn btn-num aspect-square text-3xl sm:text-[32px]">6</button>
+            <button data-op="−" onclick="chooseOperation('−')" class="calc-btn btn-op aspect-square text-3xl sm:text-[34px]">−</button>
+
+            <!-- Row 4: 1, 2, 3, + -->
+            <button onclick="appendNumber('1')" class="calc-btn btn-num aspect-square text-3xl sm:text-[32px]">1</button>
+            <button onclick="appendNumber('2')" class="calc-btn btn-num aspect-square text-3xl sm:text-[32px]">2</button>
+            <button onclick="appendNumber('3')" class="calc-btn btn-num aspect-square text-3xl sm:text-[32px]">3</button>
+            <button data-op="+" onclick="chooseOperation('+')" class="calc-btn btn-op aspect-square text-3xl sm:text-[34px]">+</button>
+
+            <!-- Row 5: Sci/Calc icon, 0, ., = (iOS 18/19 4-button bottom row!) -->
+            <button onclick="toggleScientific()" class="calc-btn btn-num aspect-square text-xl text-neutral-300" title="تبديل الوضع العلمي">
+                <i class="fa-solid fa-calculator"></i>
+            </button>
+            <button onclick="appendNumber('0')" class="calc-btn btn-num aspect-square text-3xl sm:text-[32px]">0</button>
+            <button onclick="appendDecimal()" class="calc-btn btn-num aspect-square text-3xl sm:text-[32px]">.</button>
+            <button onclick="computeResult()" class="calc-btn btn-op aspect-square text-3xl sm:text-[34px]">=</button>
+        </div>
+    </section>
+
+    <!-- ==================== TAB 2: FRACTION CALCULATOR ==================== -->
+    <section id="tab-fractions" class="tab-panel flex-1 flex-col px-4 pt-2 pb-3 overflow-y-auto ios-scroll">
+        <div class="flex items-center justify-between mb-3">
+            <div>
+                <h2 class="text-lg font-bold text-white">حاسبة الكسور</h2>
+                <p class="text-xs text-[#8E8E93]">تبسيط الكسور وتحويلها لأعداد كسرية وعشرية</p>
+            </div>
+            <button onclick="resetFractions()" class="px-3 py-1.5 rounded-full bg-[#1C1C1E] text-xs text-[#FF9F0A] font-semibold active:scale-95 transition">
+                تصفير
+            </button>
+        </div>
+
+        <!-- Visual Fraction Builder Card -->
+        <div class="bg-[#1C1C1E] rounded-3xl p-4 border border-white/5 shadow-lg mb-3">
+            <div class="flex items-center justify-between gap-2" dir="ltr">
+                
+                <!-- Fraction A -->
+                <div class="flex-1 flex items-center justify-center gap-1.5 bg-[#2C2C2E]/70 p-2.5 rounded-2xl border border-white/5">
+                    <!-- Whole A (Optional) -->
+                    <div class="flex flex-col items-center">
+                        <span class="text-[9px] text-neutral-400 mb-0.5 font-sans">عدد صحيح</span>
+                        <input id="frac-w1" type="number" placeholder="0" oninput="calculateFractions()" class="w-11 h-12 bg-[#1C1C1E] text-white text-center text-lg font-semibold rounded-xl border border-white/10 focus:border-[#FF9F0A] focus:outline-none num-font">
+                    </div>
+                    <!-- Numerator & Denominator A -->
+                    <div class="flex flex-col items-center gap-1.5">
+                        <input id="frac-n1" type="number" value="1" placeholder="البسط" oninput="calculateFractions()" class="w-14 h-10 bg-[#1C1C1E] text-white text-center text-lg font-semibold rounded-xl border border-white/10 focus:border-[#FF9F0A] focus:outline-none num-font">
+                        <div class="w-14 h-0.5 bg-[#FF9F0A] rounded-full"></div>
+                        <input id="frac-d1" type="number" value="2" placeholder="المقام" oninput="calculateFractions()" class="w-14 h-10 bg-[#1C1C1E] text-white text-center text-lg font-semibold rounded-xl border border-white/10 focus:border-[#FF9F0A] focus:outline-none num-font">
+                    </div>
+                </div>
+
+                <!-- Operation Selector -->
+                <div class="flex flex-col gap-1.5">
+                    <button onclick="setFracOp('+')" data-fop="+" class="fop-btn w-9 h-9 rounded-full bg-[#FF9F0A] text-white font-bold text-lg flex items-center justify-center transition active:scale-90">+</button>
+                    <button onclick="setFracOp('-')" data-fop="-" class="fop-btn w-9 h-9 rounded-full bg-[#2C2C2E] text-neutral-300 font-bold text-lg flex items-center justify-center transition active:scale-90">−</button>
+                    <button onclick="setFracOp('*')" data-fop="*" class="fop-btn w-9 h-9 rounded-full bg-[#2C2C2E] text-neutral-300 font-bold text-lg flex items-center justify-center transition active:scale-90">×</button>
+                    <button onclick="setFracOp('/')" data-fop="/" class="fop-btn w-9 h-9 rounded-full bg-[#2C2C2E] text-neutral-300 font-bold text-lg flex items-center justify-center transition active:scale-90">÷</button>
+                </div>
+
+                <!-- Fraction B -->
+                <div class="flex-1 flex items-center justify-center gap-1.5 bg-[#2C2C2E]/70 p-2.5 rounded-2xl border border-white/5">
+                    <!-- Whole B (Optional) -->
+                    <div class="flex flex-col items-center">
+                        <span class="text-[9px] text-neutral-400 mb-0.5 font-sans">عدد صحيح</span>
+                        <input id="frac-w2" type="number" placeholder="0" oninput="calculateFractions()" class="w-11 h-12 bg-[#1C1C1E] text-white text-center text-lg font-semibold rounded-xl border border-white/10 focus:border-[#FF9F0A] focus:outline-none num-font">
+                    </div>
+                    <!-- Numerator & Denominator B -->
+                    <div class="flex flex-col items-center gap-1.5">
+                        <input id="frac-n2" type="number" value="3" placeholder="البسط" oninput="calculateFractions()" class="w-14 h-10 bg-[#1C1C1E] text-white text-center text-lg font-semibold rounded-xl border border-white/10 focus:border-[#FF9F0A] focus:outline-none num-font">
+                        <div class="w-14 h-0.5 bg-[#FF9F0A] rounded-full"></div>
+                        <input id="frac-d2" type="number" value="4" placeholder="المقام" oninput="calculateFractions()" class="w-14 h-10 bg-[#1C1C1E] text-white text-center text-lg font-semibold rounded-xl border border-white/10 focus:border-[#FF9F0A] focus:outline-none num-font">
+                    </div>
+                </div>
+
+            </div>
+            <div class="flex justify-between text-[11px] text-neutral-400 mt-2 px-4">
+                <span>الكسر الأول</span>
+                <span>العملية</span>
+                <span>الكسر الثاني</span>
+            </div>
+        </div>
+
+        <!-- Fraction Results Display -->
+        <div id="frac-error" class="hidden bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-semibold p-3 rounded-2xl mb-3 text-center">
+            لا يمكن أن يكون المقام صفراً!
+        </div>
+
+        <div id="frac-results-box" class="space-y-2.5">
+            <!-- Primary Simplified & Mixed Card -->
+            <div class="bg-[#1C1C1E] rounded-3xl p-4 border border-white/5 flex items-center justify-around">
+                <!-- Mixed Number Result -->
+                <div class="text-center">
+                    <span class="text-xs text-[#8E8E93] block mb-1.5">العدد الكسري</span>
+                    <div id="frac-mixed-display" class="inline-flex items-center gap-2 bg-[#2C2C2E] px-4 py-2 rounded-2xl" dir="ltr">
+                        <span id="res-mixed-whole" class="text-3xl font-bold text-[#FF9F0A] num-font">1</span>
+                        <div id="res-mixed-part" class="flex flex-col items-center">
+                            <span id="res-mixed-num" class="text-base font-bold text-white num-font leading-tight">1</span>
+                            <div class="w-6 h-0.5 bg-white/60 my-0.5"></div>
+                            <span id="res-mixed-den" class="text-base font-bold text-white num-font leading-tight">4</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-14 w-[1px] bg-white/10"></div>
+
+                <!-- Improper / Simplified Fraction Result -->
+                <div class="text-center">
+                    <span class="text-xs text-[#8E8E93] block mb-1.5">الكسر المبسط</span>
+                    <div id="frac-simple-display" class="inline-flex flex-col items-center bg-[#2C2C2E] px-5 py-2 rounded-2xl" dir="ltr">
+                        <span id="res-sim-num" class="text-lg font-bold text-white num-font leading-tight">5</span>
+                        <div id="res-sim-bar" class="w-8 h-0.5 bg-[#FF9F0A] my-0.5"></div>
+                        <span id="res-sim-den" class="text-lg font-bold text-white num-font leading-tight">4</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decimal Equivalent Card -->
+            <div class="bg-[#1C1C1E] rounded-2xl p-3.5 border border-white/5 flex items-center justify-between">
+                <span class="text-xs text-[#8E8E93] font-medium">القيمة العشرية (Decimal)</span>
+                <span id="res-frac-decimal" class="text-xl font-bold text-white num-font" dir="ltr">1.25</span>
+            </div>
+
+            <!-- Step-by-step explanation -->
+            <div class="bg-[#1C1C1E] rounded-2xl p-3.5 border border-white/5">
+                <span class="text-xs text-[#FF9F0A] font-semibold block mb-1">خطوات الحل والتبسيط:</span>
+                <p id="res-frac-steps" class="text-xs text-neutral-300 leading-relaxed num-font" dir="ltr">
+                    1/2 + 3/4 = 2/4 + 3/4 = 5/4 = 1 1/4
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== TAB 3: INSTALLMENT & MURABAHA CALCULATOR ==================== -->
+    <section id="tab-installments" class="tab-panel flex-1 flex-col px-4 pt-2 pb-3 overflow-y-auto ios-scroll">
+        <div class="flex items-center justify-between mb-3">
+            <div>
+                <h2 class="text-lg font-bold text-white">حاسبة البيع بالأقساط</h2>
+                <p class="text-xs text-[#8E8E93]">حساب نسبة المرابحة والقسط الشهري بدقة</p>
+            </div>
+            <button onclick="resetInstallments()" class="px-3 py-1.5 rounded-full bg-[#1C1C1E] text-xs text-[#FF9F0A] font-semibold active:scale-95 transition">
+                إعادة ضبط
+            </button>
+        </div>
+
+        <!-- Inputs Card -->
+        <div class="bg-[#1C1C1E] rounded-3xl p-4 border border-white/5 space-y-3 mb-3">
+            <!-- Original Price -->
+            <div>
+                <label class="text-xs text-neutral-300 font-semibold flex justify-between mb-1">
+                    <span>السعر الأصلي (نقداً)</span>
+                    <span class="text-[#8E8E93] text-[11px]">دينار / دولار</span>
+                </label>
+                <div class="relative">
+                    <input id="inst-price" type="number" value="1000000" placeholder="أدخل السعر الأصلي" oninput="calculateInstallments()" class="w-full bg-[#2C2C2E] text-white text-lg font-bold rounded-2xl px-3.5 py-2.5 border border-white/10 focus:border-[#FF9F0A] focus:outline-none num-font" dir="ltr">
+                </div>
+            </div>
+
+            <!-- Down Payment -->
+            <div>
+                <label class="text-xs text-neutral-300 font-semibold flex justify-between mb-1">
+                    <span>الدفعة الأولى (المقدمة)</span>
+                    <span class="text-[#8E8E93] text-[11px]">اختياري</span>
+                </label>
+                <input id="inst-down" type="number" value="200000" placeholder="0" oninput="calculateInstallments()" class="w-full bg-[#2C2C2E] text-white text-base font-semibold rounded-2xl px-3.5 py-2 border border-white/10 focus:border-[#FF9F0A] focus:outline-none num-font" dir="ltr">
+            </div>
+
+            <!-- Murabaha Percentage & Quick Chips -->
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <label class="text-xs text-neutral-300 font-semibold">نسبة المرابحة (%)</label>
+                    <div class="flex gap-1" dir="ltr">
+                        <button onclick="setMurabaha(5)" class="px-2 py-0.5 rounded-lg bg-[#2C2C2E] hover:bg-[#FF9F0A] hover:text-white text-[11px] text-neutral-300 transition num-font">5%</button>
+                        <button onclick="setMurabaha(10)" class="px-2 py-0.5 rounded-lg bg-[#2C2C2E] hover:bg-[#FF9F0A] hover:text-white text-[11px] text-neutral-300 transition num-font">10%</button>
+                        <button onclick="setMurabaha(15)" class="px-2 py-0.5 rounded-lg bg-[#2C2C2E] hover:bg-[#FF9F0A] hover:text-white text-[11px] text-neutral-300 transition num-font">15%</button>
+                        <button onclick="setMurabaha(20)" class="px-2 py-0.5 rounded-lg bg-[#2C2C2E] hover:bg-[#FF9F0A] hover:text-white text-[11px] text-neutral-300 transition num-font">20%</button>
+                    </div>
+                </div>
+                <div class="relative flex items-center">
+                    <input id="inst-rate" type="number" step="0.1" value="15" placeholder="مثال: 15" oninput="calculateInstallments()" class="w-full bg-[#2C2C2E] text-[#FF9F0A] text-lg font-bold rounded-2xl px-3.5 py-2 border border-white/10 focus:border-[#FF9F0A] focus:outline-none num-font" dir="ltr">
+                    <span class="absolute left-3.5 text-[#FF9F0A] font-bold num-font">%</span>
+                </div>
+            </div>
+
+            <!-- Number of Months & Quick Chips -->
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <label class="text-xs text-neutral-300 font-semibold">عدد الأشهر (الأقساط)</label>
+                    <div class="flex gap-1" dir="ltr">
+                        <button onclick="setMonths(6)" class="px-2 py-0.5 rounded-lg bg-[#2C2C2E] hover:bg-[#FF9F0A] hover:text-white text-[11px] text-neutral-300 transition num-font">6</button>
+                        <button onclick="setMonths(10)" class="px-2 py-0.5 rounded-lg bg-[#2C2C2E] hover:bg-[#FF9F0A] hover:text-white text-[11px] text-neutral-300 transition num-font">10</button>
+                        <button onclick="setMonths(12)" class="px-2 py-0.5 rounded-lg bg-[#2C2C2E] hover:bg-[#FF9F0A] hover:text-white text-[11px] text-neutral-300 transition num-font">12</button>
+                        <button onclick="setMonths(24)" class="px-2 py-0.5 rounded-lg bg-[#2C2C2E] hover:bg-[#FF9F0A] hover:text-white text-[11px] text-neutral-300 transition num-font">24</button>
+                    </div>
+                </div>
+                <input id="inst-months" type="number" value="10" min="1" placeholder="عدد الأشهر" oninput="calculateInstallments()" class="w-full bg-[#2C2C2E] text-white text-base font-semibold rounded-2xl px-3.5 py-2 border border-white/10 focus:border-[#FF9F0A] focus:outline-none num-font" dir="ltr">
+            </div>
+        </div>
+
+        <!-- Highlighted Monthly Installment Card -->
+        <div class="bg-gradient-to-br from-[#FF9F0A] to-[#d97706] rounded-3xl p-4 text-white shadow-lg mb-2.5 flex items-center justify-between">
+            <div>
+                <span class="text-xs font-semibold text-white/90 block">قيمة القسط الشهري</span>
+                <span class="text-[11px] text-white/80" id="inst-months-label">لمدة 10 أشهر</span>
+            </div>
+            <div class="text-left" dir="ltr">
+                <span id="res-inst-monthly" class="text-2xl sm:text-3xl font-extrabold num-font tracking-tight">92,000</span>
+            </div>
+        </div>
+
+        <!-- Detailed Summary Grid -->
+        <div class="grid grid-cols-3 gap-2 mb-3">
+            <div class="bg-[#1C1C1E] rounded-2xl p-2.5 border border-white/5 text-center">
+                <span class="text-[10px] text-[#8E8E93] block mb-0.5">المتبقي بعد المقدمة</span>
+                <span id="res-inst-remaining" class="text-xs sm:text-sm font-bold text-white num-font block truncate" dir="ltr">800,000</span>
+            </div>
+            <div class="bg-[#1C1C1E] rounded-2xl p-2.5 border border-white/5 text-center">
+                <span class="text-[10px] text-[#8E8E93] block mb-0.5">قيمة المرابحة</span>
+                <span id="res-inst-profit" class="text-xs sm:text-sm font-bold text-emerald-400 num-font block truncate" dir="ltr">120,000</span>
+            </div>
+            <div class="bg-[#1C1C1E] rounded-2xl p-2.5 border border-white/5 text-center">
+                <span class="text-[10px] text-[#8E8E93] block mb-0.5">السعر الكلي النهائي</span>
+                <span id="res-inst-total" class="text-xs sm:text-sm font-bold text-[#FF9F0A] num-font block truncate" dir="ltr">1,120,000</span>
+            </div>
+        </div>
+
+        <!-- Copy Quote Button -->
+        <button onclick="copyInstallmentQuote()" class="w-full py-3 rounded-2xl bg-[#2C2C2E] hover:bg-[#3A3A3C] text-white text-xs font-bold flex items-center justify-center gap-2 transition active:scale-98 border border-white/10">
+            <i class="fa-solid fa-share-nodes text-[#FF9F0A]"></i>
+            <span>نسخ تفاصيل عرض التقسيط للزبون</span>
+        </button>
+    </section>
+
+    <!-- ==================== TAB 4: IRAQI DINAR CURRENCY CONVERTER ==================== -->
+    <section id="tab-currency" class="tab-panel flex-1 flex-col px-4 pt-2 pb-3 overflow-y-auto ios-scroll">
+        <div class="flex items-center justify-between mb-3">
+            <div>
+                <h2 class="text-lg font-bold text-white">حاسبة العملة (الدينار العراقي)</h2>
+                <p class="text-xs text-[#8E8E93]">تحديد سعر الصرف والتحويل الفوري بالاتجاهين</p>
+            </div>
+            <button onclick="toggleCustomCurrencyModal()" class="px-3 py-1.5 rounded-full bg-[#1C1C1E] text-xs text-[#FF9F0A] font-semibold flex items-center gap-1 active:scale-95 transition">
+                <i class="fa-solid fa-plus text-[10px]"></i>
+                <span>عملة مخصصة</span>
+            </button>
+        </div>
+
+        <!-- Currency Selector Pills -->
+        <div id="currency-pills" class="flex items-center gap-1.5 overflow-x-auto ios-scroll pb-2 mb-2 shrink-0">
+            <!-- Populated by JS -->
+        </div>
+
+        <!-- Custom Currency Inline Form (Hidden by default) -->
+        <div id="custom-currency-box" class="hidden bg-[#2C2C2E] rounded-2xl p-3 mb-3 border border-[#FF9F0A]/40 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-[#FF9F0A]">إضافة عملة جديدة</span>
+                <button onclick="toggleCustomCurrencyModal()" class="text-neutral-400 hover:text-white text-xs"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                <input id="custom-curr-name" type="text" placeholder="الاسم (مثال: ليرة)" class="col-span-2 bg-[#1C1C1E] text-white text-xs rounded-xl px-2.5 py-2 border border-white/10 focus:outline-none">
+                <input id="custom-curr-sym" type="text" placeholder="الرمز (₺)" class="bg-[#1C1C1E] text-white text-xs text-center rounded-xl px-2 py-2 border border-white/10 focus:outline-none">
+            </div>
+            <div class="flex gap-2">
+                <input id="custom-curr-rate" type="number" placeholder="سعر 1 وحدة بالدينار العراقي" class="flex-1 bg-[#1C1C1E] text-white text-xs rounded-xl px-2.5 py-2 border border-white/10 focus:outline-none num-font" dir="ltr">
+                <button onclick="addCustomCurrency()" class="px-4 py-2 rounded-xl bg-[#FF9F0A] text-white text-xs font-bold">حفظ</button>
+            </div>
+        </div>
+
+        <!-- Exchange Rate Configuration Box (Supports 1 Unit OR 100 Units Iraqi Market Convention) -->
+        <div class="bg-[#1C1C1E] rounded-3xl p-3.5 border border-white/5 mb-3">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-semibold text-neutral-300 flex items-center gap-1.5">
+                    <i class="fa-solid fa-sliders text-[#FF9F0A]"></i>
+                    تحديد سعر الصرف
+                </span>
+                <!-- Toggle 1 Unit vs 100 Units (e.g. 100$ = 150,000 IQD) -->
+                <div class="flex bg-[#2C2C2E] p-0.5 rounded-xl text-[11px]">
+                    <button id="rate-mode-1" onclick="setRateMode(1)" class="px-2.5 py-1 rounded-lg bg-[#FF9F0A] text-white font-bold transition">لكل 1</button>
+                    <button id="rate-mode-100" onclick="setRateMode(100)" class="px-2.5 py-1 rounded-lg text-neutral-300 font-semibold transition">لكل 100</button>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 bg-[#2C2C2E] rounded-2xl px-3 py-2 border border-white/10" dir="ltr">
+                <span id="rate-base-label" class="text-sm font-bold text-[#FF9F0A] whitespace-nowrap num-font">1 $ =</span>
+                <input id="exchange-rate-input" type="number" step="any" value="1320" oninput="onExchangeRateChange()" class="w-full bg-transparent text-white text-lg font-bold focus:outline-none num-font text-center">
+                <span class="text-xs font-bold text-neutral-400 whitespace-nowrap">د.ع IQD</span>
+            </div>
+            <p id="rate-helper-text" class="text-[11px] text-[#8E8E93] mt-1.5 text-center">
+                سعر 100 دولار يساوي <span class="text-white font-semibold num-font">132,000</span> دينار عراقي
+            </p>
+        </div>
+
+        <!-- Two-Way Conversion Cards -->
+        <div class="space-y-2.5 relative">
+            <!-- Foreign Currency Input Box -->
+            <div class="bg-[#1C1C1E] rounded-3xl p-4 border border-white/5 focus-within:border-[#FF9F0A]/60 transition">
+                <div class="flex items-center justify-between mb-1">
+                    <span id="foreign-curr-title" class="text-xs font-bold text-neutral-300">الدولار الأمريكي (USD)</span>
+                    <span id="foreign-curr-badge" class="text-xs font-bold px-2 py-0.5 rounded-md bg-[#2C2C2E] text-[#FF9F0A] num-font">$</span>
+                </div>
+                <input id="input-foreign" type="number" step="any" value="100" placeholder="0" oninput="convertFromForeign()" class="w-full bg-transparent text-white text-3xl font-bold focus:outline-none num-font" dir="ltr">
+            </div>
+
+            <!-- Swap Visual Indicator -->
+            <div class="flex justify-center -my-3.5 relative z-10">
+                <div class="w-9 h-9 rounded-full bg-[#FF9F0A] text-white flex items-center justify-center shadow-lg border-4 border-black">
+                    <i class="fa-solid fa-arrow-up-arrow-down text-xs"></i>
+                </div>
+            </div>
+
+            <!-- Iraqi Dinar (IQD) Input Box -->
+            <div class="bg-[#1C1C1E] rounded-3xl p-4 border border-white/5 focus-within:border-[#FF9F0A]/60 transition">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-bold text-neutral-300">الدينار العراقي (IQD)</span>
+                    <span class="text-xs font-bold px-2 py-0.5 rounded-md bg-[#2C2C2E] text-emerald-400">د.ع</span>
+                </div>
+                <input id="input-iqd" type="number" step="any" value="132000" placeholder="0" oninput="convertFromIQD()" class="w-full bg-transparent text-white text-3xl font-bold focus:outline-none num-font" dir="ltr">
+            </div>
+        </div>
+
+        <!-- Quick Amount Presets -->
+        <div class="mt-3">
+            <span class="text-[11px] text-[#8E8E93] block mb-1.5">مبالغ سريعة:</span>
+            <div class="grid grid-cols-4 gap-1.5" dir="ltr">
+                <button onclick="setQuickForeign(10)" class="py-2 rounded-xl bg-[#1C1C1E] hover:bg-[#2C2C2E] text-xs font-semibold text-white num-font transition active:scale-95">10</button>
+                <button onclick="setQuickForeign(50)" class="py-2 rounded-xl bg-[#1C1C1E] hover:bg-[#2C2C2E] text-xs font-semibold text-white num-font transition active:scale-95">50</button>
+                <button onclick="setQuickForeign(100)" class="py-2 rounded-xl bg-[#1C1C1E] hover:bg-[#2C2C2E] text-xs font-semibold text-white num-font transition active:scale-95">100</button>
+                <button onclick="setQuickIQD(25000)" class="py-2 rounded-xl bg-[#1C1C1E] hover:bg-[#2C2C2E] text-[11px] font-semibold text-emerald-400 num-font transition active:scale-95">25k د.ع</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== BOTTOM IOS TAB BAR ==================== -->
+    <nav class="bg-[#161618]/90 backdrop-blur-xl border-t border-white/10 px-2 pt-2 pb-4 sm:pb-5 shrink-0 z-20">
+        <div class="grid grid-cols-4 gap-1">
+            <button onclick="switchTab('standard')" data-tab="standard" class="nav-btn flex flex-col items-center justify-center gap-1 py-1 text-[#FF9F0A] transition">
+                <i class="fa-solid fa-calculator text-lg"></i>
+                <span class="text-[10px] font-bold">العادية</span>
+            </button>
+            <button onclick="switchTab('fractions')" data-tab="fractions" class="nav-btn flex flex-col items-center justify-center gap-1 py-1 text-[#8E8E93] hover:text-neutral-300 transition">
+                <i class="fa-solid fa-divide text-lg"></i>
+                <span class="text-[10px] font-semibold">الكسور</span>
+            </button>
+            <button onclick="switchTab('installments')" data-tab="installments" class="nav-btn flex flex-col items-center justify-center gap-1 py-1 text-[#8E8E93] hover:text-neutral-300 transition">
+                <i class="fa-solid fa-hand-holding-dollar text-lg"></i>
+                <span class="text-[10px] font-semibold">الأقساط</span>
+            </button>
+            <button onclick="switchTab('currency')" data-tab="currency" class="nav-btn flex flex-col items-center justify-center gap-1 py-1 text-[#8E8E93] hover:text-neutral-300 transition">
+                <i class="fa-solid fa-coins text-lg"></i>
+                <span class="text-[10px] font-semibold">العملة</span>
+            </button>
+        </div>
+        <!-- iOS Home Indicator Bar -->
+        <div class="hidden sm:block w-32 h-1 bg-white/80 rounded-full mx-auto mt-3"></div>
+    </nav>
+
+</div>
+
+<script>
+    // ==================== GLOBAL UTILITIES & AUDIO FEEDBACK ====================
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    function playClickSound(isOperator = false) {
+        if (!soundEnabled) return;
+        try {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(isOperator ? 680 : 520, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.03);
+            gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.035);
+        } catch (e) {}
+    }
+
+    function toggleSound() {
+        soundEnabled = !soundEnabled;
+        const btn = document.getElementById('sound-toggle-btn');
+        btn.innerHTML = soundEnabled
+            ? '<i class="fa-solid fa-volume-high text-xs"></i>'
+            : '<i class="fa-solid fa-volume-xmark text-xs text-neutral-500"></i>';
+        showToast(soundEnabled ? 'تم تفعيل صوت الأزرار' : 'تم كتم صوت الأزرار');
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        const msgEl = document.getElementById('toast-msg');
+        msgEl.textContent = message;
+        toast.classList.remove('opacity-0', '-translate-y-2');
+        toast.classList.add('opacity-100', 'translate-y-0');
+        clearTimeout(window.toastTimer);
+        window.toastTimer = setTimeout(() => {
+            toast.classList.remove('opacity-100', 'translate-y-0');
+            toast.classList.add('opacity-0', '-translate-y-2');
+        }, 2200);
+    }
+
+    function copyTextToClipboard(text, successMsg = 'تم النسخ إلى الحافظة') {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            showToast(successMsg);
+        } catch (err) {
+            showToast('تعذر النسخ');
+        }
+        document.body.removeChild(textarea);
+    }
+
+    // Update iOS Status Bar Clock
+    function updateClock() {
+        const now = new Date();
+        let h = now.getHours();
+        let m = now.getMinutes();
+        h = h % 12 || 12;
+        m = m < 10 ? '0' + m : m;
+        document.getElementById('ios-clock').textContent = `${h}:${m}`;
+    }
+    setInterval(updateClock, 15000);
+    updateClock();
+
+    // ==================== TAB NAVIGATION ====================
+    function switchTab(tabId) {
+        playClickSound(false);
+        document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            if (btn.dataset.tab === tabId) {
+                btn.classList.remove('text-[#8E8E93]');
+                btn.classList.add('text-[#FF9F0A]');
+            } else {
+                btn.classList.remove('text-[#FF9F0A]');
+                btn.classList.add('text-[#8E8E93]');
+            }
+        });
+    }
+
+    // ==================== TAB 1: STANDARD IPHONE 17 PRO MAX CALCULATOR ====================
+    let currentOperand = '0';
+    let previousOperand = '';
+    let currentOperation = null;
+    let shouldResetScreen = false;
+    let calcHistory = [];
+
+    const displayEl = document.getElementById('calc-display');
+    const expressionEl = document.getElementById('calc-expression');
+    const clearIconEl = document.getElementById('clear-icon');
+
+    function formatDisplayNumber(numStr) {
+        if (numStr === 'خطأ' || numStr === 'Infinity' || numStr === '-Infinity' || numStr === 'NaN') return 'خطأ';
+        const isNegative = numStr.startsWith('-');
+        let clean = isNegative ? numStr.slice(1) : numStr;
+        if (clean.includes('e')) return numStr; // Scientific notation
+
+        const parts = clean.split('.');
+        const intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        let formatted = parts.length > 1 ? `${intPart}.${parts[1]}` : intPart;
+        return isNegative ? `-${formatted}` : formatted;
+    }
+
+    function updateCalcUI() {
+        const formatted = formatDisplayNumber(currentOperand);
+        displayEl.textContent = formatted;
+
+        // Dynamic iOS font scaling based on character count
+        const len = formatted.length;
+        displayEl.classList.remove('text-6xl', 'sm:text-[64px]', 'text-5xl', 'text-4xl', 'text-3xl');
+        if (len <= 7) {
+            displayEl.classList.add('text-6xl', 'sm:text-[64px]');
+        } else if (len <= 10) {
+            displayEl.classList.add('text-5xl');
+        } else if (len <= 13) {
+            displayEl.classList.add('text-4xl');
+        } else {
+            displayEl.classList.add('text-3xl');
+        }
+
+        // Update expression line
+        if (currentOperation && previousOperand !== '') {
+            expressionEl.textContent = `${formatDisplayNumber(previousOperand)} ${currentOperation}`;
+        }
+
+        // Update top-left button: Backspace icon when typing, AC when 0/cleared
+        if (currentOperand !== '0' && !shouldResetScreen) {
+            clearIconEl.innerHTML = '<i class="fa-solid fa-delete-left text-xl"></i>';
+        } else {
+            clearIconEl.textContent = 'AC';
+        }
+
+        // Highlight active operator button just like iOS
+        document.querySelectorAll('[data-op]').forEach(btn => {
+            if (btn.dataset.op === currentOperation && shouldResetScreen) {
+                btn.classList.add('active-op');
+            } else {
+                btn.classList.remove('active-op');
+            }
+        });
+    }
+
+    function appendNumber(num) {
+        playClickSound(false);
+        if (currentOperand === 'خطأ' || shouldResetScreen) {
+            currentOperand = num;
+            shouldResetScreen = false;
+            if (!currentOperation) expressionEl.textContent = '';
+        } else {
+            if (currentOperand.replace(/[^0-9]/g, '').length >= 15) return;
+            currentOperand = currentOperand === '0' ? num : currentOperand + num;
+        }
+        updateCalcUI();
+    }
+
+    function appendDecimal() {
+        playClickSound(false);
+        if (shouldResetScreen || currentOperand === 'خطأ') {
+            currentOperand = '0.';
+            shouldResetScreen = false;
+            updateCalcUI();
+            return;
+        }
+        if (!currentOperand.includes('.')) {
+            currentOperand += '.';
+            updateCalcUI();
+        }
+    }
+
+    function handleBackspaceOrClear() {
+        playClickSound(false);
+        if (currentOperand !== '0' && !shouldResetScreen) {
+            // Backspace behavior
+            if (currentOperand.length === 1 || (currentOperand.length === 2 && currentOperand.startsWith('-'))) {
+                currentOperand = '0';
+            } else {
+                currentOperand = currentOperand.slice(0, -1);
+            }
+        } else {
+            // All Clear (AC)
+            currentOperand = '0';
+            previousOperand = '';
+            currentOperation = null;
+            shouldResetScreen = false;
+            expressionEl.textContent = '';
+        }
+        updateCalcUI();
+    }
+
+    function toggleSign() {
+        playClickSound(false);
+        if (currentOperand === '0' || currentOperand === 'خطأ') return;
+        currentOperand = currentOperand.startsWith('-')
+            ? currentOperand.slice(1)
+            : '-' + currentOperand;
+        updateCalcUI();
+    }
+
+    function handlePercent() {
+        playClickSound(false);
+        if (currentOperand === 'خطأ') return;
+        const val = parseFloat(currentOperand);
+        if (isNaN(val)) return;
+        // iOS style: if adding/subtracting, percent is relative to previousOperand
+        if (previousOperand && (currentOperation === '+' || currentOperation === '−')) {
+            const base = parseFloat(previousOperand);
+            currentOperand = String(roundPrecision((base * val) / 100));
+        } else {
+            currentOperand = String(roundPrecision(val / 100));
+        }
+        updateCalcUI();
+    }
+
+    function chooseOperation(op) {
+        playClickSound(true);
+        if (currentOperand === 'خطأ') return;
+        if (currentOperation !== null && !shouldResetScreen) {
+            computeResult(false);
+        }
+        previousOperand = currentOperand;
+        currentOperation = op;
+        shouldResetScreen = true;
+        updateCalcUI();
+    }
+
+    function roundPrecision(num) {
+        return Math.round(num * 1e12) / 1e12;
+    }
+
+    function computeResult(addToHistory = true) {
+        if (currentOperation === null || shouldResetScreen) return;
+        playClickSound(true);
+
+        const prev = parseFloat(previousOperand);
+        const curr = parseFloat(currentOperand);
+        if (isNaN(prev) || isNaN(curr)) return;
+
+        let result;
+        switch (currentOperation) {
+            case '+': result = prev + curr; break;
+            case '−': result = prev - curr; break;
+            case '×': result = prev * curr; break;
+            case '÷':
+                if (curr === 0) {
+                    currentOperand = 'خطأ';
+                    expressionEl.textContent = `${formatDisplayNumber(previousOperand)} ÷ 0`;
+                    previousOperand = '';
+                    currentOperation = null;
+                    shouldResetScreen = true;
+                    updateCalcUI();
+                    return;
+                }
+                result = prev / curr;
+                break;
+        }
+
+        const formattedResult = String(roundPrecision(result));
+        const fullExpr = `${formatDisplayNumber(previousOperand)} ${currentOperation} ${formatDisplayNumber(currentOperand)}`;
+        expressionEl.textContent = fullExpr;
+
+        if (addToHistory) {
+            calcHistory.unshift({ expr: fullExpr, res: formatDisplayNumber(formattedResult), raw: formattedResult });
+            if (calcHistory.length > 30) calcHistory.pop();
+            renderHistory();
+        }
+
+        currentOperand = formattedResult;
+        currentOperation = null;
+        previousOperand = '';
+        shouldResetScreen = true;
+        updateCalcUI();
+    }
+
+    // Scientific Functions
+    function toggleScientific() {
+        playClickSound(false);
+        const panel = document.getElementById('scientific-panel');
+        const btn = document.getElementById('sci-toggle-btn');
+        panel.classList.toggle('hidden');
+        btn.classList.toggle('ring-1');
+        btn.classList.toggle('ring-[#FF9F0A]');
+    }
+
+    function sciFunc(fn) {
+        playClickSound(false);
+        const val = parseFloat(currentOperand);
+        if (isNaN(val)) return;
+        let res;
+        switch (fn) {
+            case 'sin': res = Math.sin(val * Math.PI / 180); break;
+            case 'cos': res = Math.cos(val * Math.PI / 180); break;
+            case 'tan': res = Math.tan(val * Math.PI / 180); break;
+            case 'ln': res = val <= 0 ? NaN : Math.log(val); break;
+            case 'log': res = val <= 0 ? NaN : Math.log10(val); break;
+            case 'sqrt': res = val < 0 ? NaN : Math.sqrt(val); break;
+            case 'sq': res = val * val; break;
+            case 'inv': res = val === 0 ? NaN : 1 / val; break;
+        }
+        if (isNaN(res) || !isFinite(res)) {
+            currentOperand = 'خطأ';
+        } else {
+            expressionEl.textContent = `${fn}(${formatDisplayNumber(currentOperand)})`;
+            currentOperand = String(roundPrecision(res));
+        }
+        shouldResetScreen = true;
+        updateCalcUI();
+    }
+
+    function insertConstant(c) {
+        playClickSound(false);
+        currentOperand = c === 'pi' ? String(roundPrecision(Math.PI)) : String(roundPrecision(Math.E));
+        shouldResetScreen = false;
+        updateCalcUI();
+    }
+
+    function copyCalcResult() {
+        copyTextToClipboard(currentOperand, `تم نسخ النتيجة: ${formatDisplayNumber(currentOperand)}`);
+    }
+
+    // History Drawer Logic
+    function toggleHistory() {
+        playClickSound(false);
+        document.getElementById('history-drawer').classList.toggle('hidden');
+    }
+
+    function renderHistory() {
+        const listEl = document.getElementById('history-list');
+        if (calcHistory.length === 0) {
+            listEl.innerHTML = '<p class="text-center text-neutral-500 text-xs py-10">لا توجد عمليات مسجلة بعد</p>';
+            return;
+        }
+        listEl.innerHTML = calcHistory.map((item) => `
+            <div onclick="useHistoryItem('${item.raw}')" class="p-3 rounded-2xl bg-[#2C2C2E]/70 hover:bg-[#2C2C2E] cursor-pointer transition text-left" dir="ltr">
+                <div class="text-xs text-[#8E8E93] num-font">${item.expr}</div>
+                <div class="text-lg font-bold text-white num-font mt-0.5">= ${item.res}</div>
+            </div>
+        `).join('');
+    }
+
+    function useHistoryItem(rawVal) {
+        currentOperand = rawVal;
+        shouldResetScreen = false;
+        toggleHistory();
+        updateCalcUI();
+    }
+
+    function clearHistory() {
+        calcHistory = [];
+        renderHistory();
+        showToast('تم مسح السجل');
+    }
+
+    // Keyboard Support for Standard Calculator
+    document.addEventListener('keydown', (e) => {
+        if (!document.getElementById('tab-standard').classList.contains('active')) return;
+        if (e.key >= '0' && e.key <= '9') appendNumber(e.key);
+        else if (e.key === '.') appendDecimal();
+        else if (e.key === '+') chooseOperation('+');
+        else if (e.key === '-') chooseOperation('−');
+        else if (e.key === '*') chooseOperation('×');
+        else if (e.key === '/') { e.preventDefault(); chooseOperation('÷'); }
+        else if (e.key === 'Enter' || e.key === '=') { e.preventDefault(); computeResult(); }
+        else if (e.key === 'Backspace') handleBackspaceOrClear();
+        else if (e.key === 'Escape') {
+            currentOperand = '0'; previousOperand = ''; currentOperation = null; updateCalcUI();
+        }
+    });
+
+    // ==================== TAB 2: FRACTION CALCULATOR ====================
+    let currentFracOp = '+';
+
+    function gcd(a, b) {
+        a = Math.abs(a);
+        b = Math.abs(b);
+        while (b) {
+            let t = b;
+            b = a % b;
+            a = t;
+        }
+        return a;
+    }
+
+    function setFracOp(op) {
+        playClickSound(true);
+        currentFracOp = op;
+        document.querySelectorAll('.fop-btn').forEach(btn => {
+            if (btn.dataset.fop === op) {
+                btn.classList.remove('bg-[#2C2C2E]', 'text-neutral-300');
+                btn.classList.add('bg-[#FF9F0A]', 'text-white');
+            } else {
+                btn.classList.remove('bg-[#FF9F0A]', 'text-white');
+                btn.classList.add('bg-[#2C2C2E]', 'text-neutral-300');
+            }
+        });
+        calculateFractions();
+    }
+
+    function resetFractions() {
+        playClickSound(false);
+        document.getElementById('frac-w1').value = '';
+        document.getElementById('frac-n1').value = '1';
+        document.getElementById('frac-d1').value = '2';
+        document.getElementById('frac-w2').value = '';
+        document.getElementById('frac-n2').value = '3';
+        document.getElementById('frac-d2').value = '4';
+        setFracOp('+');
+    }
+
+    function calculateFractions() {
+        const w1 = parseInt(document.getElementById('frac-w1').value) || 0;
+        const n1 = parseInt(document.getElementById('frac-n1').value) || 0;
+        const d1 = parseInt(document.getElementById('frac-d1').value);
+
+        const w2 = parseInt(document.getElementById('frac-w2').value) || 0;
+        const n2 = parseInt(document.getElementById('frac-n2').value) || 0;
+        const d2 = parseInt(document.getElementById('frac-d2').value);
+
+        const errorBox = document.getElementById('frac-error');
+        const resultsBox = document.getElementById('frac-results-box');
+
+        if (!d1 || !d2 || d1 === 0 || d2 === 0) {
+            errorBox.textContent = 'لا يمكن أن يكون المقام صفراً!';
+            errorBox.classList.remove('hidden');
+            resultsBox.classList.add('opacity-40');
+            return;
+        }
+
+        // Convert mixed to improper fractions
+        const sign1 = w1 < 0 ? -1 : 1;
+        const impN1 = sign1 * (Math.abs(w1) * Math.abs(d1) + Math.abs(n1)) * (n1 < 0 && w1 === 0 ? -1 : 1) * (d1 < 0 ? -1 : 1);
+        const impD1 = Math.abs(d1);
+
+        const sign2 = w2 < 0 ? -1 : 1;
+        const impN2 = sign2 * (Math.abs(w2) * Math.abs(d2) + Math.abs(n2)) * (n2 < 0 && w2 === 0 ? -1 : 1) * (d2 < 0 ? -1 : 1);
+        const impD2 = Math.abs(d2);
+
+        let resN, resD, opSymbol;
+        switch (currentFracOp) {
+            case '+':
+                resN = impN1 * impD2 + impN2 * impD1;
+                resD = impD1 * impD2;
+                opSymbol = '+';
+                break;
+            case '-':
+                resN = impN1 * impD2 - impN2 * impD1;
+                resD = impD1 * impD2;
+                opSymbol = '−';
+                break;
+            case '*':
+                resN = impN1 * impN2;
+                resD = impD1 * impD2;
+                opSymbol = '×';
+                break;
+            case '/':
+                if (impN2 === 0) {
+                    errorBox.textContent = 'لا يمكن القسمة على صفر!';
+                    errorBox.classList.remove('hidden');
+                    resultsBox.classList.add('opacity-40');
+                    return;
+                }
+                resN = impN1 * impD2;
+                resD = impD1 * impN2;
+                opSymbol = '÷';
+                break;
+        }
+
+        errorBox.classList.add('hidden');
+        resultsBox.classList.remove('opacity-40');
+
+        if (resD < 0) {
+            resN = -resN;
+            resD = -resD;
+        }
+
+        const divisor = gcd(resN, resD) || 1;
+        const simN = resN / divisor;
+        const simD = resD / divisor;
+
+        // Update Simplified Fraction Display
+        document.getElementById('res-sim-num').textContent = simN;
+        document.getElementById('res-sim-den').textContent = simD;
+        document.getElementById('res-sim-bar').style.display = simD === 1 ? 'none' : 'block';
+        document.getElementById('res-sim-den').style.display = simD === 1 ? 'none' : 'block';
+
+        // Update Mixed Number Display
+        const wholePart = Math.trunc(simN / simD);
+        const remNum = Math.abs(simN % simD);
+        const mixedWholeEl = document.getElementById('res-mixed-whole');
+        const mixedPartEl = document.getElementById('res-mixed-part');
+
+        if (remNum === 0) {
+            mixedWholeEl.textContent = wholePart;
+            mixedWholeEl.classList.remove('hidden');
+            mixedPartEl.classList.add('hidden');
+        } else if (wholePart === 0) {
+            mixedWholeEl.classList.add('hidden');
+            mixedPartEl.classList.remove('hidden');
+            document.getElementById('res-mixed-num').textContent = simN;
+            document.getElementById('res-mixed-den').textContent = simD;
+        } else {
+            mixedWholeEl.textContent = wholePart;
+            mixedWholeEl.classList.remove('hidden');
+            mixedPartEl.classList.remove('hidden');
+            document.getElementById('res-mixed-num').textContent = remNum;
+            document.getElementById('res-mixed-den').textContent = simD;
+        }
+
+        // Update Decimal
+        const decVal = roundPrecision(simN / simD);
+        document.getElementById('res-frac-decimal').textContent = decVal;
+
+        // Update Steps
+        const mixedText = (wholePart !== 0 && remNum !== 0) ? ` = ${wholePart} (${remNum}/${simD})` : '';
+        document.getElementById('res-frac-steps').textContent =
+            `(${impN1}/${impD1}) ${opSymbol} (${impN2}/${impD2}) = ${resN}/${resD} → ${simN}/${simD}${mixedText}`;
+    }
+
+    // ==================== TAB 3: INSTALLMENT & MURABAHA CALCULATOR ====================
+    function formatMoney(num) {
+        if (isNaN(num) || !isFinite(num)) return '0';
+        return Math.round(num).toLocaleString('en-US');
+    }
+
+    function setMurabaha(rate) {
+        playClickSound(false);
+        document.getElementById('inst-rate').value = rate;
+        calculateInstallments();
+    }
+
+    function setMonths(m) {
+        playClickSound(false);
+        document.getElementById('inst-months').value = m;
+        calculateInstallments();
+    }
+
+    function resetInstallments() {
+        playClickSound(false);
+        document.getElementById('inst-price').value = '1000000';
+        document.getElementById('inst-down').value = '0';
+        document.getElementById('inst-rate').value = '10';
+        document.getElementById('inst-months').value = '12';
+        calculateInstallments();
+    }
+
+    function calculateInstallments() {
+        const price = parseFloat(document.getElementById('inst-price').value) || 0;
+        const down = parseFloat(document.getElementById('inst-down').value) || 0;
+        const rate = parseFloat(document.getElementById('inst-rate').value) || 0;
+        const months = Math.max(1, parseInt(document.getElementById('inst-months').value) || 1);
+
+        const remaining = Math.max(0, price - down);
+        const profit = remaining * (rate / 100);
+        const totalFinanced = remaining + profit;
+        const totalFinalPrice = down + totalFinanced;
+        const monthlyInstallment = totalFinanced / months;
+
+        document.getElementById('inst-months-label').textContent = `لمدة ${months} ${months === 1 ? 'شهر' : months <= 10 ? 'أشهر' : 'شهراً'}`;
+        document.getElementById('res-inst-monthly').textContent = formatMoney(monthlyInstallment);
+        document.getElementById('res-inst-remaining').textContent = formatMoney(remaining);
+        document.getElementById('res-inst-profit').textContent = formatMoney(profit);
+        document.getElementById('res-inst-total').textContent = formatMoney(totalFinalPrice);
+    }
+
+    function copyInstallmentQuote() {
+        const price = formatMoney(parseFloat(document.getElementById('inst-price').value) || 0);
+        const down = formatMoney(parseFloat(document.getElementById('inst-down').value) || 0);
+        const rate = document.getElementById('inst-rate').value || 0;
+        const months = document.getElementById('inst-months').value || 1;
+        const monthly = document.getElementById('res-inst-monthly').textContent;
+        const total = document.getElementById('res-inst-total').textContent;
+
+        const summary = `📋 تفاصيل البيع بالأقساط:\n` +
+            `• السعر الأصلي: ${price}\n` +
+            `• الدفعة الأولى: ${down}\n` +
+            `• نسبة المرابحة: ${rate}%\n` +
+            `• عدد الأشهر: ${months} شهر\n` +
+            `• القسط الشهري: ${monthly}\n` +
+            `• السعر الكلي النهائي: ${total}`;
+
+        copyTextToClipboard(summary, 'تم نسخ تفاصيل الأقساط بنجاح');
+    }
+
+    // ==================== TAB 4: IRAQI DINAR CURRENCY CONVERTER ====================
+    let currencies = [
+        { code: 'USD', name: 'الدولار الأمريكي', symbol: '$', rate: 1320 },
+        { code: 'EUR', name: 'اليورو الأوروبي', symbol: '€', rate: 1430 },
+        { code: 'GBP', name: 'الجنيه الإسترليني', symbol: '£', rate: 1680 },
+        { code: 'SAR', name: 'الريال السعودي', symbol: 'ر.س', rate: 352 },
+        { code: 'AED', name: 'الدرهم الإماراتي', symbol: 'د.إ', rate: 359 }
+    ];
+
+    let selectedCurrIndex = 0;
+    let rateMode = 1; // 1 = rate per 1 unit, 100 = rate per 100 units (e.g., 100$ = 150,000 IQD)
+
+    function renderCurrencyPills() {
+        const container = document.getElementById('currency-pills');
+        container.innerHTML = currencies.map((c, idx) => {
+            const active = idx === selectedCurrIndex;
+            return `
+                <button onclick="selectCurrency(${idx})" class="px-3.5 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition flex items-center gap-1.5 shrink-0 ${
+                    active
+                        ? 'bg-[#FF9F0A] text-white shadow-md'
+                        : 'bg-[#1C1C1E] text-neutral-300 hover:bg-[#2C2C2E] border border-white/5'
+                }">
+                    <span class="num-font">${c.symbol}</span>
+                    <span>${c.code}</span>
+                </button>
+            `;
+        }).join('');
+    }
+
+    function selectCurrency(idx) {
+        playClickSound(false);
+        selectedCurrIndex = idx;
+        const curr = currencies[selectedCurrIndex];
+        document.getElementById('foreign-curr-title').textContent = `${curr.name} (${curr.code})`;
+        document.getElementById('foreign-curr-badge').textContent = curr.symbol;
+
+        updateRateBoxUI();
+        convertFromForeign();
+        renderCurrencyPills();
+    }
+
+    function setRateMode(mode) {
+        playClickSound(false);
+        rateMode = mode;
+        const btn1 = document.getElementById('rate-mode-1');
+        const btn100 = document.getElementById('rate-mode-100');
+        if (mode === 1) {
+            btn1.className = 'px-2.5 py-1 rounded-lg bg-[#FF9F0A] text-white font-bold transition';
+            btn100.className = 'px-2.5 py-1 rounded-lg text-neutral-300 font-semibold transition';
+        } else {
+            btn100.className = 'px-2.5 py-1 rounded-lg bg-[#FF9F0A] text-white font-bold transition';
+            btn1.className = 'px-2.5 py-1 rounded-lg text-neutral-300 font-semibold transition';
+        }
+        updateRateBoxUI();
+    }
+
+    function updateRateBoxUI() {
+        const curr = currencies[selectedCurrIndex];
+        document.getElementById('rate-base-label').textContent = `${rateMode} ${curr.symbol} =`;
+        const displayedRate = rateMode === 1 ? curr.rate : roundPrecision(curr.rate * 100);
+        document.getElementById('exchange-rate-input').value = displayedRate;
+        updateRateHelperText();
+    }
+
+    function updateRateHelperText() {
+        const curr = currencies[selectedCurrIndex];
+        const helper = document.getElementById('rate-helper-text');
+        if (rateMode === 1) {
+            const per100 = (curr.rate * 100).toLocaleString('en-US', { maximumFractionDigits: 2 });
+            helper.innerHTML = `سعر 100 ${curr.name} يساوي <span class="text-white font-semibold num-font">${per100}</span> دينار عراقي`;
+        } else {
+            const per1 = curr.rate.toLocaleString('en-US', { maximumFractionDigits: 4 });
+            helper.innerHTML = `سعر 1 ${curr.name} يساوي <span class="text-white font-semibold num-font">${per1}</span> دينار عراقي`;
+        }
+    }
+
+    function onExchangeRateChange() {
+        const inputVal = parseFloat(document.getElementById('exchange-rate-input').value) || 0;
+        currencies[selectedCurrIndex].rate = rateMode === 1 ? inputVal : inputVal / 100;
+        updateRateHelperText();
+        convertFromForeign();
+    }
+
+    function convertFromForeign() {
+        const foreignVal = parseFloat(document.getElementById('input-foreign').value);
+        const iqdInput = document.getElementById('input-iqd');
+        if (isNaN(foreignVal)) {
+            iqdInput.value = '';
+            return;
+        }
+        const rate = currencies[selectedCurrIndex].rate;
+        const resultIQD = roundPrecision(foreignVal * rate);
+        iqdInput.value = resultIQD;
+    }
+
+    function convertFromIQD() {
+        const iqdVal = parseFloat(document.getElementById('input-iqd').value);
+        const foreignInput = document.getElementById('input-foreign');
+        if (isNaN(iqdVal)) {
+            foreignInput.value = '';
+            return;
+        }
+        const rate = currencies[selectedCurrIndex].rate;
+        if (rate === 0) {
+            foreignInput.value = '0';
+            return;
+        }
+        const resultForeign = Math.round((iqdVal / rate) * 10000) / 10000;
+        foreignInput.value = resultForeign;
+    }
+
+    function setQuickForeign(amount) {
+        playClickSound(false);
+        document.getElementById('input-foreign').value = amount;
+        convertFromForeign();
+    }
+
+    function setQuickIQD(amount) {
+        playClickSound(false);
+        document.getElementById('input-iqd').value = amount;
+        convertFromIQD();
+    }
+
+    function toggleCustomCurrencyModal() {
+        playClickSound(false);
+        document.getElementById('custom-currency-box').classList.toggle('hidden');
+    }
+
+    function addCustomCurrency() {
+        const name = document.getElementById('custom-curr-name').value.trim();
+        const symbol = document.getElementById('custom-curr-sym').value.trim() || '¤';
+        const rate = parseFloat(document.getElementById('custom-curr-rate').value);
+
+        if (!name || isNaN(rate) || rate <= 0) {
+            showToast('يرجى إدخال اسم العملة وسعر الصرف بشكل صحيح');
+            return;
+        }
+
+        currencies.push({
+            code: name.slice(0, 6),
+            name: name,
+            symbol: symbol,
+            rate: rate
+        });
+
+        document.getElementById('custom-curr-name').value = '';
+        document.getElementById('custom-curr-sym').value = '';
+        document.getElementById('custom-curr-rate').value = '';
+        toggleCustomCurrencyModal();
+
+        selectCurrency(currencies.length - 1);
+        showToast(`تمت إضافة ${name} بنجاح`);
+    }
+
+    // ==================== INITIALIZE ALL TABS ====================
+    window.addEventListener('DOMContentLoaded', () => {
+        updateCalcUI();
+        calculateFractions();
+        calculateInstallments();
+        renderCurrencyPills();
+        selectCurrency(0);
+    });
+</script>
+
+
+<!-- APK-STUDIO-WEBVIEW-BRIDGE -->
+<script>
+  (function() {
+    // Ensure external WhatsApp & tel links open cleanly in Android WebView
+    document.addEventListener('click', function(e) {
+      var a = e.target.closest ? e.target.closest('a') : null;
+      if (!a || !a.href) return;
+      if (/^(https?:\/\/(wa\.me|api\.whatsapp\.com)|whatsapp:\/\/|tel:|mailto:)/i.test(a.href)) {
+        a.target = '_blank';
+      }
+    }, true);
+  })();
+</script>
+</body>
+</html>
